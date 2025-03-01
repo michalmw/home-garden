@@ -1,55 +1,89 @@
-import { kv } from "@vercel/kv";
-import { Plant } from "@/types/Plant";
-import { PlantAction } from "@/types/Action";
+import { Plant, PlantWithId } from "@/types";
+import { readData, writeData } from "./jsonDataService";
 
-export async function getPlants(): Promise<Plant[]> {
+export async function getPlants(): Promise<PlantWithId[]> {
   try {
-    // Pobierz rośliny z Vercel KV
-    const plants = (await kv.get<Plant[]>("plants")) || [];
-    return plants;
+    const data = await readData<{ plants: PlantWithId[] }>("plants");
+    return data.plants || [];
   } catch (error) {
-    console.error("Error getting plants from KV:", error);
+    console.error("Error getting plants from JSON storage:", error);
     return [];
   }
 }
 
-export async function savePlants(plants: Plant[]): Promise<void> {
+export async function getPlant(id: string): Promise<PlantWithId | null> {
   try {
-    // Zapisz rośliny do Vercel KV
-    await kv.set("plants", plants);
+    const plants = await getPlants();
+    return plants.find((plant) => plant.id === id) || null;
   } catch (error) {
-    console.error("Error saving plants to KV:", error);
+    console.error(`Error getting plant ${id} from JSON storage:`, error);
+    return null;
+  }
+}
+
+export async function createPlant(plant: Plant): Promise<PlantWithId> {
+  try {
+    const plants = await getPlants();
+
+    // Generate a unique ID
+    const id = crypto.randomUUID();
+
+    // Create new plant with ID
+    const plantWithId: PlantWithId = { ...plant, id };
+
+    // Add to existing plants
+    const updatedPlants = [...plants, plantWithId];
+
+    // Save to JSON file
+    await writeData("plants", { plants: updatedPlants });
+
+    return plantWithId;
+  } catch (error) {
+    console.error("Error creating plant in JSON storage:", error);
     throw error;
   }
 }
 
-export async function getActions(): Promise<PlantAction[]> {
+export async function updatePlant(
+  id: string,
+  plant: Partial<Plant>
+): Promise<PlantWithId | null> {
   try {
-    // Pobierz akcje z Vercel KV
-    const actions = (await kv.get<PlantAction[]>("actions")) || [];
-    return actions;
-  } catch (error) {
-    console.error("Error getting actions from KV:", error);
-    return [];
-  }
-}
+    const plants = await getPlants();
+    const index = plants.findIndex((p) => p.id === id);
 
-export async function saveActions(actions: PlantAction[]): Promise<void> {
-  try {
-    // Zapisz akcje do Vercel KV
-    await kv.set("actions", actions);
+    if (index === -1) return null;
+
+    // Update the plant
+    const updatedPlant = { ...plants[index], ...plant };
+    plants[index] = updatedPlant;
+
+    // Save to JSON file
+    await writeData("plants", { plants });
+
+    return updatedPlant;
   } catch (error) {
-    console.error("Error saving actions to KV:", error);
+    console.error(`Error updating plant ${id} in JSON storage:`, error);
     throw error;
   }
 }
 
-// Funkcja migracji danych z plików do KV storage
-export async function migrateDataToKV(): Promise<void> {
+export async function deletePlant(id: string): Promise<boolean> {
   try {
-    // W rzeczywistej aplikacji mógłbyś tutaj zaimportować dane z plików JSON
-    // i zapisać je do KV storage podczas pierwszego wdrożenia
+    const plants = await getPlants();
+    const updatedPlants = plants.filter((plant) => plant.id !== id);
+
+    // If no plant was filtered out, the ID doesn't exist
+    if (updatedPlants.length === plants.length) {
+      return false;
+    }
+
+    // Save to JSON file
+    await writeData("plants", { plants: updatedPlants });
+
+    return true;
   } catch (error) {
-    console.error("Error during migration to KV:", error);
+    console.error(`Error deleting plant ${id} from JSON storage:`, error);
+    throw error;
   }
 }
