@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPlant, updatePlant, deletePlant } from "@/lib/storage";
-import { Plant } from "@/types";
+import { Plant } from "@/types/Plant";
 
 interface RouteParams {
   params: {

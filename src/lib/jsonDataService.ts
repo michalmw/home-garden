@@ -1,3 +1,6 @@
+// Add this directive to ensure this file only runs on the server
+"use server";
+
 import fs from "fs";
 import path from "path";
 

@@ -1,4 +1,4 @@
-import { Plant, PlantWithId } from "@/types";
+import { Plant, PlantWithId } from "@/types/Plant";
 import { readData, writeData } from "./jsonDataService";
 
 export async function getPlants(): Promise<PlantWithId[]> {

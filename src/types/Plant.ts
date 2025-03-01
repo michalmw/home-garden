@@ -10,6 +10,10 @@ export interface Plant {
   notes?: string;
 }
 
+export interface PlantWithId extends Plant {
+  id: string;
+}
+
 export interface PlantTask {
   id: string;
   plantId: string;
