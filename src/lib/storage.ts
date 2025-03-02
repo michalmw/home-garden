@@ -1,89 +1,137 @@
-import { Plant, PlantWithId } from "@/types/Plant";
-import { readData, writeData } from "./jsonDataService";
+import { Plant } from "@/types/Plant";
+import { PlantAction } from "@/types/Action";
+import {
+  getPlantsData,
+  updatePlantsData,
+  getActionsData,
+  updateActionsData,
+} from "@/services/jsonBinService";
 
-export async function getPlants(): Promise<PlantWithId[]> {
+// Get all plants
+export async function getPlants(): Promise<Plant[]> {
   try {
-    const data = await readData<{ plants: PlantWithId[] }>("plants");
+    const data = await getPlantsData();
     return data.plants || [];
   } catch (error) {
-    console.error("Error getting plants from JSON storage:", error);
+    console.error("Error getting plants:", error);
     return [];
   }
 }
 
-export async function getPlant(id: string): Promise<PlantWithId | null> {
+// Get a single plant by ID
+export async function getPlant(id: string): Promise<Plant | null> {
   try {
-    const plants = await getPlants();
-    return plants.find((plant) => plant.id === id) || null;
+    const data = await getPlantsData();
+    const plant = data.plants?.find((p: Plant) => p.id === id);
+    return plant || null;
   } catch (error) {
-    console.error(`Error getting plant ${id} from JSON storage:`, error);
+    console.error(`Error getting plant ${id}:`, error);
     return null;
   }
 }
 
-export async function createPlant(plant: Plant): Promise<PlantWithId> {
+// Create a new plant
+export async function createPlant(plant: Plant): Promise<Plant> {
   try {
-    const plants = await getPlants();
+    // Generate ID if not provided
+    if (!plant.id) {
+      plant.id = Date.now().toString();
+    }
 
-    // Generate a unique ID
-    const id = crypto.randomUUID();
+    // Set default dates if not provided
+    if (!plant.lastWatered) {
+      plant.lastWatered = new Date().toISOString();
+    }
+    if (!plant.lastMisted) {
+      plant.lastMisted = new Date().toISOString();
+    }
 
-    // Create new plant with ID
-    const plantWithId: PlantWithId = { ...plant, id };
+    const data = await getPlantsData();
+    const plants = data.plants || [];
 
-    // Add to existing plants
-    const updatedPlants = [...plants, plantWithId];
+    // Add the new plant
+    const updatedPlants = { plants: [...plants, plant] };
+    await updatePlantsData(updatedPlants);
 
-    // Save to JSON file
-    await writeData("plants", { plants: updatedPlants });
-
-    return plantWithId;
+    return plant;
   } catch (error) {
-    console.error("Error creating plant in JSON storage:", error);
+    console.error("Error creating plant:", error);
     throw error;
   }
 }
 
+// Update an existing plant
 export async function updatePlant(
   id: string,
-  plant: Partial<Plant>
-): Promise<PlantWithId | null> {
+  plantUpdate: Partial<Plant>
+): Promise<Plant | null> {
   try {
-    const plants = await getPlants();
-    const index = plants.findIndex((p) => p.id === id);
+    const data = await getPlantsData();
+    const plants = data.plants || [];
 
+    const index = plants.findIndex((p: Plant) => p.id === id);
     if (index === -1) return null;
 
     // Update the plant
-    const updatedPlant = { ...plants[index], ...plant };
+    const updatedPlant = { ...plants[index], ...plantUpdate };
     plants[index] = updatedPlant;
 
-    // Save to JSON file
-    await writeData("plants", { plants });
-
+    await updatePlantsData({ plants });
     return updatedPlant;
   } catch (error) {
-    console.error(`Error updating plant ${id} in JSON storage:`, error);
+    console.error(`Error updating plant ${id}:`, error);
     throw error;
   }
 }
 
+// Delete a plant
 export async function deletePlant(id: string): Promise<boolean> {
   try {
-    const plants = await getPlants();
-    const updatedPlants = plants.filter((plant) => plant.id !== id);
+    const data = await getPlantsData();
+    const plants = data.plants || [];
 
-    // If no plant was filtered out, the ID doesn't exist
-    if (updatedPlants.length === plants.length) {
-      return false;
-    }
+    const filteredPlants = plants.filter((p: Plant) => p.id !== id);
 
-    // Save to JSON file
-    await writeData("plants", { plants: updatedPlants });
+    // If no plant was removed
+    if (filteredPlants.length === plants.length) return false;
 
+    await updatePlantsData({ plants: filteredPlants });
     return true;
   } catch (error) {
-    console.error(`Error deleting plant ${id} from JSON storage:`, error);
+    console.error(`Error deleting plant ${id}:`, error);
+    throw error;
+  }
+}
+
+// Get all actions
+export async function getActions(): Promise<PlantAction[]> {
+  try {
+    const data = await getActionsData();
+    return data.actions || [];
+  } catch (error) {
+    console.error("Error getting actions:", error);
+    return [];
+  }
+}
+
+// Add a new action
+export async function addAction(action: PlantAction): Promise<PlantAction> {
+  try {
+    // Generate ID if not provided
+    if (!action.id) {
+      action.id = Date.now().toString();
+    }
+
+    const data = await getActionsData();
+    const actions = data.actions || [];
+
+    // Add the new action
+    const updatedActions = { actions: [...actions, action] };
+    await updateActionsData(updatedActions);
+
+    return action;
+  } catch (error) {
+    console.error("Error adding action:", error);
     throw error;
   }
 }

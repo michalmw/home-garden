@@ -1,42 +1,12 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-
-const actionsFilePath = path.join(process.cwd(), "data", "actions.json");
-
-// Helper function to read the actions data file
-function readActionsData() {
-  if (!fs.existsSync(actionsFilePath)) {
-    // Initialize with empty actions array if file doesn't exist
-    const dirPath = path.join(process.cwd(), "data");
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
-    fs.writeFileSync(actionsFilePath, JSON.stringify({ actions: [] }, null, 2));
-    return { actions: [] };
-  }
-
-  const data = fs.readFileSync(actionsFilePath, "utf8");
-  return JSON.parse(data);
-}
-
-// Helper function to write to the actions data file
-function writeActionsData(data: any) {
-  const dirPath = path.join(process.cwd(), "data");
-
-  // Create the data directory if it doesn't exist
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  fs.writeFileSync(actionsFilePath, JSON.stringify(data, null, 2));
-}
+import { getActions, addAction } from "@/lib/storage";
+import { PlantAction } from "@/types/Action";
 
 // GET all actions
 export async function GET(request: Request) {
   try {
-    const data = readActionsData();
-    return NextResponse.json(data.actions);
+    const actions = await getActions();
+    return NextResponse.json(actions);
   } catch (error) {
     console.error("Error reading actions data:", error);
     return NextResponse.json(
@@ -59,16 +29,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate ID if not provided
-    if (!action.id) {
-      action.id = Date.now().toString();
-    }
-
-    // Read current data and check if there's already an action for this plant/type/date
-    const data = readActionsData();
+    // Check for existing action today
+    const actions = await getActions();
     const today = new Date().toISOString().split("T")[0];
-    const existingAction = data.actions.find(
-      (a: any) =>
+    const existingAction = actions.find(
+      (a: PlantAction) =>
         a.plantId === action.plantId &&
         a.type === action.type &&
         a.date.split("T")[0] === today
@@ -81,11 +46,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Add new action and write back
-    data.actions.push(action);
-    writeActionsData(data);
-
-    return NextResponse.json(action, { status: 201 });
+    // Add new action
+    const newAction = await addAction(action);
+    return NextResponse.json(newAction, { status: 201 });
   } catch (error) {
     console.error("Error adding action:", error);
     return NextResponse.json(

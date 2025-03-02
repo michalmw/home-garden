@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  createPlant,
-  deletePlant,
-  getPlant,
-  getPlants,
-  updatePlant,
-} from "@/lib/storage";
+import { createPlant, getPlants } from "@/lib/storage";
 import { Plant } from "@/types/Plant";
 
 // GET all plants
