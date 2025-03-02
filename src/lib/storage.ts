@@ -1,5 +1,6 @@
 import { Plant } from "@/types/Plant";
 import { PlantAction } from "@/types/Action";
+import { PlantsData, ActionsData } from "@/types/JsonBinTypes";
 import {
   getPlantsData,
   updatePlantsData,
@@ -50,7 +51,7 @@ export async function createPlant(plant: Plant): Promise<Plant> {
     const plants = data.plants || [];
 
     // Add the new plant
-    const updatedPlants = { plants: [...plants, plant] };
+    const updatedPlants: PlantsData = { plants: [...plants, plant] };
     await updatePlantsData(updatedPlants);
 
     return plant;
@@ -126,7 +127,7 @@ export async function addAction(action: PlantAction): Promise<PlantAction> {
     const actions = data.actions || [];
 
     // Add the new action
-    const updatedActions = { actions: [...actions, action] };
+    const updatedActions: ActionsData = { actions: [...actions, action] };
     await updateActionsData(updatedActions);
 
     return action;

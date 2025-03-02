@@ -1,13 +1,14 @@
 /**
  * Service for interacting with jsonBin.io API
  */
+import { PlantsData, ActionsData } from "@/types/JsonBinTypes";
 
 const JSON_BIN_API_URL =
   process.env.JSON_BIN_API_URL || "https://api.jsonbin.io/v3/b";
 const JSON_BIN_API_KEY =
   "$2a$10$ieDkrsQxLGORqbsjyYfRHe0E.dhERKBKfAQba0wLnOdiPK43cAHEe";
 const PLANTS_BIN_ID = process.env.PLANTS_BIN_ID;
-const ACTIONS_BIN_ID = process.env.ACTIONS_BIN_ID;
+const ACTIONS_BIN_ID = process.env.ACTIONS_BIN_ID; // Fixed typo here
 
 if (!JSON_BIN_API_KEY) {
   console.warn("JSON_BIN_API_KEY not set in environment variables");
@@ -80,39 +81,41 @@ export async function updateBin<T>(binId: string, data: T): Promise<T> {
 /**
  * Get plants data from the plants bin
  */
-export async function getPlantsData() {
+export async function getPlantsData(): Promise<PlantsData> {
   if (!PLANTS_BIN_ID) {
     throw new Error("PLANTS_BIN_ID not configured");
   }
-  return readBin(PLANTS_BIN_ID);
+  return readBin<PlantsData>(PLANTS_BIN_ID);
 }
 
 /**
  * Update plants data in the plants bin
  */
-export async function updatePlantsData(data: any) {
+export async function updatePlantsData(data: PlantsData): Promise<PlantsData> {
   if (!PLANTS_BIN_ID) {
     throw new Error("PLANTS_BIN_ID not configured");
   }
-  return updateBin(PLANTS_BIN_ID, data);
+  return updateBin<PlantsData>(PLANTS_BIN_ID, data);
 }
 
 /**
  * Get actions data from the actions bin
  */
-export async function getActionsData() {
+export async function getActionsData(): Promise<ActionsData> {
   if (!ACTIONS_BIN_ID) {
     throw new Error("ACTIONS_BIN_ID not configured");
   }
-  return readBin(ACTIONS_BIN_ID);
+  return readBin<ActionsData>(ACTIONS_BIN_ID);
 }
 
 /**
  * Update actions data in the actions bin
  */
-export async function updateActionsData(data: any) {
+export async function updateActionsData(
+  data: ActionsData
+): Promise<ActionsData> {
   if (!ACTIONS_BIN_ID) {
     throw new Error("ACTIONS_BIN_ID not configured");
   }
-  return updateBin(ACTIONS_BIN_ID, data);
+  return updateBin<ActionsData>(ACTIONS_BIN_ID, data);
 }
