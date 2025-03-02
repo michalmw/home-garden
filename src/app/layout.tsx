@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import BottomNavigation from "@/components/BottomNavigation";
+import ClientProvider from "./ClientProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -76,12 +77,14 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-background min-h-screen pb-16`}>
-        <ToastContainer
-          position="top-center"
-          toastClassName="rounded-lg shadow-lg"
-        />
-        <main className="pb-16">{children}</main>
-        <BottomNavigation />
+        <ClientProvider>
+          <ToastContainer
+            position="top-center"
+            toastClassName="rounded-lg shadow-lg"
+          />
+          <main className="pb-16">{children}</main>
+          <BottomNavigation />
+        </ClientProvider>
       </body>
     </html>
   );

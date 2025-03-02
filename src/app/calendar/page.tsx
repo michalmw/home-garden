@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
+import CalendarComponent from "@/components/CalendarComponent";
 import {
   addDays,
   format,
@@ -108,7 +107,6 @@ export default function CalendarPage() {
     return tasks;
   };
 
-  // Rest of the component stays the same
   const updateSelectedDateTasks = (selectedDate: Date, allTasks: any[]) => {
     const tasksForDate = allTasks.filter((task) =>
       isSameDay(new Date(task.date), selectedDate)
@@ -174,12 +172,10 @@ export default function CalendarPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="calendar-container">
-            <Calendar
-              onChange={handleDateChange}
+            <CalendarComponent
               value={date}
-              locale="pl-PL"
+              onChange={handleDateChange}
               tileContent={tileContent}
-              className="w-full p-3 bg-white rounded-lg shadow-md"
             />
             <div className="mt-4 flex justify-center space-x-4 text-sm">
               <div className="flex items-center">
