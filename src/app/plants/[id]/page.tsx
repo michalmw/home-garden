@@ -211,11 +211,11 @@ export default function PlantDetailPage({
 
         <div className="bg-white rounded-xl p-6 shadow-card">
           {/* Plant image */}
-          {plant.image && (
+          {plant.imageName && (
             <div className="mb-6">
               <div className="relative h-48 w-full rounded-lg overflow-hidden">
                 <Image
-                  src={plant.image}
+                  src={`/flowers/${plant.imageName}.jpg`}
                   alt={plant.name}
                   fill
                   className="object-cover"

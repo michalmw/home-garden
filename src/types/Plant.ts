@@ -3,6 +3,7 @@ export interface Plant {
   name: string;
   species?: string;
   image?: string; // Base64 encoded image or URL
+  imageName?: string;
   wateringInterval: number; // days between watering
   mistingInterval: number; // days between misting
   lastWatered: string; // ISO date string
